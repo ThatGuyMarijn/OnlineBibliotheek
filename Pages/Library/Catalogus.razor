@@ -1,0 +1,21 @@
+﻿@page "/catalogus"
+@using OnlineBibliotheek.Data
+@using OnlineBibliotheek.Data.Models
+@using Syncfusion.Blazor.Grids  
+
+@inject BibliotheekDbContext _bblthkDbContext
+@inject NavigationManager UriHelper
+
+<h3>Catalogus</h3>
+<button class="btn btn-secondary" @onclick="@(e => AddBook())">Boek Toevoegen</button>
+<button class="btn btn-secondary" @onclick="@(e => AddAuthor())">Auteur Toevoegen</button>
+<hr />
+
+<SfGrid DataSource="allBooks" AllowSorting="true" AllowFiltering="true" AllowPaging="true">
+    <GridEvents RowSelected="RowSelectHandler" TValue="Boek"></GridEvents>
+    <GridColumns>
+        <GridColumn Field="@nameof(Boek.Naam)" HeaderText="Titel" TextAlign="TextAlign.Right" Width="60"></GridColumn>
+        <GridColumn Field="@nameof(Boek.Genre)" HeaderText="Genre" TextAlign="TextAlign.Right" Width="60"></GridColumn>
+        <GridColumn Field="@nameof(Boek.Prijs)" HeaderText="Prijs" TextAlign="TextAlign.Right" Width="60"></GridColumn>
+    </GridColumns>
+</SfGrid>

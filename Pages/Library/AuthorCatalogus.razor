@@ -1,0 +1,20 @@
+﻿@page "/catalogus/auteurs"
+@using OnlineBibliotheek.Data
+@using OnlineBibliotheek.Data.Models
+@using Syncfusion.Blazor.Grids
+
+@inject BibliotheekDbContext _bblthkDbContext
+@inject NavigationManager UriHelper
+
+<h3>Catalogus - Auteurs</h3>
+<button class="btn btn-secondary" @onclick="@(e => AddAuthor())">Auteur Toevoegen</button>
+<hr />
+
+<SfGrid DataSource="allAuthors" AllowSorting="true" AllowFiltering="true" AllowPaging="true">
+    <GridEvents RowSelected="RowSelectHandler" TValue="Auteur"></GridEvents>
+    <GridColumns>
+        <GridColumn Field="@nameof(Auteur.Naam)" HeaderText="Naam" TextAlign="TextAlign.Right" Width="60"></GridColumn>
+        <GridColumn Field="@nameof(Auteur.Land)" HeaderText="Land" TextAlign="TextAlign.Right" Width="60"></GridColumn>
+        <GridColumn Field="@nameof(Auteur.Geboren)" HeaderText="Geboren" TextAlign="TextAlign.Right" Width="60"></GridColumn>
+    </GridColumns>
+</SfGrid>

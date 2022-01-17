@@ -1,0 +1,113 @@
+﻿@page "/catalogus/boek/{Id:guid}"
+@page "/catalogus/new/{New:bool}"
+@using OnlineBibliotheek.Data
+@using OnlineBibliotheek.Data.Models
+@using OnlineBibliotheek.Data.Enums
+
+@inject BibliotheekDbContext _bblthkDbContext
+@inject NavigationManager UriHelper
+
+<h3>Boek Wijzigen</h3>
+<hr />
+<EditForm Model="@book">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <p>
+            <div class="col-md-6 text-center">
+                <label for="naam">Naam: </label>
+                <br />
+                <InputText id="naam" @bind-Value="book.Naam" />
+            </div>
+        </p>
+        <p>
+            <div class="col-md-6 text-center">
+                <label for="genre">Genre: </label>
+                <br />
+                <InputSelect id="team" @bind-Value="bookGenre">
+                    @*
+                    8 is het aantal genres dat we hebben
+                    *@
+                    @for (var i = 1; i < 8 + 1; i++)
+                    {
+                        Genres genre = (Genres)i;
+                        <option value="@i">@genre</option>
+                    }
+                </InputSelect>
+            </div>
+        </p>
+        <p>
+            <div class="col-md-6 text-center">
+                <label for="prijs">Prijs: </label>
+                <br />
+                <InputNumber id="prijs" @bind-Value="book.Prijs" />
+            </div>
+        </p>
+        <p>
+            <div class="col-md-6 text-center">
+                <label for="author">Auteur: </label>
+                <br />
+                <InputSelect id="author" @bind-Value="book.AuteurId">
+                    <option value="@Guid.Empty">n.v.t.</option>
+                    @foreach(var author in authors)
+                    {
+                        <option value="@author.Id">@author.Naam</option>
+                    }
+                </InputSelect>
+            </div>
+        </p>
+        <button class="btn btn-primary" type="submit" @onclick="OnSave">Opslaan</button>
+        <button class="btn btn-danger" @onclick="OnDelete">Verwijder</button>
+    </div>
+</EditForm>
+
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public bool New { get; set; }
+
+    private Boek book = new Boek();
+    private List<Auteur> authors = new List<Auteur>();
+    int bookGenre;
+
+    protected override void OnInitialized()
+    {
+        if (New)
+            Id = Guid.NewGuid();
+        else
+        {
+            book = _bblthkDbContext.Boeken.Single(x => x.Id == Id);
+            bookGenre = (int)book.Genre;
+        }
+
+        authors = _bblthkDbContext.Auteurs.ToList();
+    }
+
+    private void OnSave()
+    {
+        var enumGenre = (Genres)bookGenre;
+        book.Genre = enumGenre;
+        var tmp = new Boek
+        {
+            Id = Id,
+            Naam = book.Naam,
+            Genre = enumGenre,
+            Prijs = book.Prijs,
+            AuteurId = book.AuteurId
+        };
+
+        if (New)
+            _bblthkDbContext.Boeken.Add(tmp);
+        else
+            _bblthkDbContext.Boeken.Update(book);
+        _bblthkDbContext.SaveChanges();
+
+        UriHelper.NavigateTo($"/catalogus", true);
+    }
+
+    private void OnDelete()
+    {
+        _bblthkDbContext.Boeken.Remove(book);
+        _bblthkDbContext.SaveChanges();
+        UriHelper.NavigateTo($"/catalogus", true);
+    }
+}

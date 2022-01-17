@@ -1,0 +1,114 @@
+﻿@page "/auteur/new/{New:bool}"
+@page "/auteur/{Id:guid}/bewerken"
+@using OnlineBibliotheek.Data
+@using OnlineBibliotheek.Data.Models
+@using System.Globalization 
+@inject BibliotheekDbContext _bblthkDbContext
+@inject NavigationManager UriHelper
+
+
+<h3>Auteur</h3>
+<hr />
+<EditForm Model="@author">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <p>
+            <div class="col-md-6 text-center">
+                <label for="naam">Naam: </label>
+                <br />
+                <InputText id="naam" @bind-Value="author.Naam" />
+            </div>
+        </p>
+        @*<p>
+                <div class="col-md-6 text-center">
+                    <label for="land">Land: </label>
+                    <br />
+                    <InputText id="land" @bind-Value="author.Land" />
+                </div>
+            </p>*@
+        <p>
+            <div class="col-md-6 text-center">
+                <label for="land">Land: </label>
+                <br />
+                <InputSelect id="land" @bind-Value="author.Land">
+                    @foreach(var culture in CultureList)
+                    {
+                        <option value="@culture">@culture</option>
+                    }
+                </InputSelect>
+            </div>
+        </p>
+        <p>
+            <div class="col-md-6 text-center">
+                <label for="geboren">Geboren: </label>
+                <br />
+                <InputDate id="geboren" @bind-Value="author.Geboren" />
+            </div>
+        </p>
+        <button class="btn btn-primary" type="submit" @onclick="OnSave">Opslaan</button>
+        <button class="btn btn-danger" @onclick="OnDelete">Verwijder</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public bool New { get; set; }
+
+    private Auteur author = new Auteur();
+    List<string> CultureList = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        CountryList();
+        if (!New)
+        {
+            author = _bblthkDbContext.Auteurs.Single(x => x.Id == Id);
+        }
+        else
+        {
+            author.Id = Guid.NewGuid();
+            author.Geboren = DateTime.Today;
+        }
+    }
+
+    private void OnSave()
+    {
+        var tmp = new Auteur
+        {
+            Id = author.Id,
+            Naam = author.Naam,
+            Land = author.Land,
+            Geboren = author.Geboren
+        };
+
+        if (New)
+            _bblthkDbContext.Auteurs.Add(tmp);
+        else
+            _bblthkDbContext.Auteurs.Update(author);
+        _bblthkDbContext.SaveChanges();
+
+        UriHelper.NavigateTo($"/catalogus", true);
+    }
+
+    private void OnDelete()
+    {
+        _bblthkDbContext.Auteurs.Remove(author);
+        _bblthkDbContext.SaveChanges();
+        UriHelper.NavigateTo($"/catalogus", true);
+    }
+
+    private void CountryList()
+    {
+        CultureInfo[] getCultureInfo = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
+
+        foreach(CultureInfo getCulture in getCultureInfo)
+        {
+            RegionInfo GetRegionInfo = new RegionInfo(getCulture.LCID);
+            if(!(CultureList.Contains(GetRegionInfo.CurrencyEnglishName)))
+            {
+                CultureList.Add(GetRegionInfo.CurrencyEnglishName);
+            }
+        }
+        CultureList.Sort();
+    }
+}
